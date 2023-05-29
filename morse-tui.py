@@ -157,6 +157,8 @@ def encodeText(text):
     result = result
     return str(result)
 
+## Textual
+
 class MorseWidget(Widget):
 
     text = reactive("")
@@ -173,7 +175,7 @@ class MorseApp(App):
     mode = True
 
     def compose(self) -> ComposeResult:
-        yield Input(placeholder="Enter text or morse code")
+        yield Input(placeholder="Enter text or morse code (seperate morse words by 1 space, morse sentences by 3 spaces)")
         yield MorseWidget()
         yield Footer()
 
