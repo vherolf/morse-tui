@@ -1,204 +1,181 @@
 import re
-import pydantic
-from typing import Optional
 
+from pydantic import BaseModel
 from textual.app import App, ComposeResult
-from textual.reactive import reactive
-from textual.widget import Widget
-from textual.widgets import Input
-from textual.widgets import Footer
 from textual.binding import Binding
+from textual.reactive import reactive
+from textual.widgets import Footer, Input, Static
 
-dot = '\N{Middle Dot}'
-dash = '\N{Hyphen-Minus}'
+DOT = '\N{Middle Dot}'
+DASH = '\N{Hyphen-Minus}'
 
-class Morse(pydantic.BaseModel):
+
+class Morse(BaseModel):
     letter: str
     sequence: str
 
-    def __init__(self, letter: str, sequence:str):
-        super(Morse, self).__init__(letter=letter, sequence=sequence)
 
-morsecode = (
-        Morse(" ",f" "),
-        Morse("A",f"{dot}{dash}"),
-        Morse("B",f"{dash}{dot}{dot}{dot}"),
-        Morse("C",f"{dash}{dot}{dash}{dot}"),
-        Morse("D",f"{dash}{dot}{dot}"),
-        Morse("E",f"{dot}"),
-        Morse("F",f"{dot}{dot}{dash}{dot}"),
-        Morse("G",f"{dash}{dash}{dot}"),
-        Morse("H",f"{dot}{dot}{dot}{dot}"),
-        Morse("I",f"{dot}{dot}"),
-        Morse("J",f"{dot}{dash}{dash}{dash}"),
-        Morse("K",f"{dash}{dot}{dash}"),
-        Morse("L",f"{dot}{dash}{dot}{dot}"),
-        Morse("M",f"{dash}{dash}"),
-        Morse("N",f"{dash}{dot}"),
-        Morse("O",f"{dash}{dash}{dash}"),
-        Morse("P",f"{dot}{dash}{dash}{dot}"),
-        Morse("Q",f"{dash}{dash}{dot}{dash}"),
-        Morse("R",f"{dot}{dash}{dot}"),
-        Morse("S",f"{dot}{dot}{dot}"),
-        Morse("T",f"{dash}"),
-        Morse("U",f"{dot}{dot}{dash}"),
-        Morse("V",f"{dot}{dot}{dot}{dash}"),
-        Morse("W",f"{dot}{dash}{dash}"),
-        Morse("X",f"{dash}{dot}{dot}{dash}"),
-        Morse("Y",f"{dash}{dot}{dash}{dash}"),
-        Morse("Z",f"{dash}{dash}{dot}{dot}"),
-        Morse("1",f"{dot}{dash}{dash}{dash}{dash}"),
-        Morse("2",f"{dot}{dot}{dash}{dash}{dash}"),
-        Morse("3",f"{dot}{dot}{dot}{dash}{dash}"),
-        Morse("4",f"{dot}{dot}{dot}{dot}{dash}"),
-        Morse("5",f"{dot}{dot}{dot}{dot}{dot}"),
-        Morse("6",f"{dash}{dot}{dot}{dot}{dot}"),
-        Morse("7",f"{dash}{dash}{dot}{dot}{dot}"),
-        Morse("8",f"{dash}{dash}{dash}{dot}{dot}"),
-        Morse("9",f"{dash}{dash}{dash}{dash}{dot}"),
-        Morse("0",f"{dash}{dash}{dash}{dash}{dash}"),
-        Morse("À",f"{dot}{dash}{dash}{dot}{dash}"),
-        Morse("Ä",f"{dot}{dash}{dot}{dash}"),
-        Morse("È",f"{dot}{dash}{dot}{dot}{dash}"),
-        Morse("É",f"{dot}{dot}{dash}{dot}{dot}"),
-        Morse("Ö",f"{dash}{dash}{dash}{dot}"),
-        Morse("Ü",f"{dot}{dot}{dash}{dash}"),
-        Morse("ß",f"{dot}{dot}{dot}{dash}{dash}{dot}{dot}"),
-        Morse("CH",f"{dash}{dash}{dash}{dash}"),
-        Morse("Ñ",f"{dash}{dash}{dot}{dash}{dash}"),
-        Morse(".",f"{dot}{dash}{dot}{dash}{dot}{dash}"),
-        Morse(",",f"{dash}{dash}{dot}{dot}{dash}{dash}"),
-        Morse(":",f"{dash}{dash}{dash}{dot}{dot}{dot}"),
-        Morse(";",f"{dash}{dot}{dash}{dot}{dash}{dot}"),
-        Morse("?",f"{dot}{dot}{dash}{dash}{dot}{dot}"),
-        Morse("-",f"{dash}{dot}{dot}{dot}{dot}{dash}"),
-        Morse("_",f"{dot}{dot}{dash}{dash}{dot}{dash}"),
-        Morse("(",f"{dash}{dot}{dash}{dash}{dot}"),
-        Morse(")",f"{dash}{dot}{dash}{dash}{dot}{dash}"),
-        Morse("'",f"{dot}{dash}{dash}{dash}{dash}{dot}"),
-        Morse("=",f"{dash}{dot}{dot}{dot}{dash}"),
-        Morse("+",f"{dot}{dash}{dot}{dash}{dot}"),
-        Morse("/",f"{dash}{dot}{dot}{dash}{dot}"),
-        Morse("@",f"{dot}{dash}{dash}{dot}{dash}{dot}"),
-        Morse("KA",f"{dash}{dot}{dash}{dot}{dash}"),
-        Morse("BT",f"{dash}{dot}{dot}{dot}{dash}"),
-        Morse("AR",f"{dot}{dash}{dot}{dash}{dot}"),
-        Morse("VE",f"{dot}{dot}{dot}{dash}{dot}"),
-        Morse("SK",f"{dot}{dot}{dot}{dash}{dot}{dash}"),
-        Morse("SOS",f"{dot}{dot}{dot}{dash}{dash}{dash}{dot}{dot}{dot}"),
-        Morse("HH",f"{dot}{dot}{dot}{dot}{dot}{dot}{dot}{dot}"),
-        Morse("!",f"{dash}{dot}{dash}{dot}{dash}{dash}"),
-        )
+morsecode: tuple[Morse, ...] = (
+    Morse(letter=" ",   sequence=" "),
+    Morse(letter="A",   sequence=f"{DOT}{DASH}"),
+    Morse(letter="B",   sequence=f"{DASH}{DOT}{DOT}{DOT}"),
+    Morse(letter="C",   sequence=f"{DASH}{DOT}{DASH}{DOT}"),
+    Morse(letter="D",   sequence=f"{DASH}{DOT}{DOT}"),
+    Morse(letter="E",   sequence=f"{DOT}"),
+    Morse(letter="F",   sequence=f"{DOT}{DOT}{DASH}{DOT}"),
+    Morse(letter="G",   sequence=f"{DASH}{DASH}{DOT}"),
+    Morse(letter="H",   sequence=f"{DOT}{DOT}{DOT}{DOT}"),
+    Morse(letter="I",   sequence=f"{DOT}{DOT}"),
+    Morse(letter="J",   sequence=f"{DOT}{DASH}{DASH}{DASH}"),
+    Morse(letter="K",   sequence=f"{DASH}{DOT}{DASH}"),
+    Morse(letter="L",   sequence=f"{DOT}{DASH}{DOT}{DOT}"),
+    Morse(letter="M",   sequence=f"{DASH}{DASH}"),
+    Morse(letter="N",   sequence=f"{DASH}{DOT}"),
+    Morse(letter="O",   sequence=f"{DASH}{DASH}{DASH}"),
+    Morse(letter="P",   sequence=f"{DOT}{DASH}{DASH}{DOT}"),
+    Morse(letter="Q",   sequence=f"{DASH}{DASH}{DOT}{DASH}"),
+    Morse(letter="R",   sequence=f"{DOT}{DASH}{DOT}"),
+    Morse(letter="S",   sequence=f"{DOT}{DOT}{DOT}"),
+    Morse(letter="T",   sequence=f"{DASH}"),
+    Morse(letter="U",   sequence=f"{DOT}{DOT}{DASH}"),
+    Morse(letter="V",   sequence=f"{DOT}{DOT}{DOT}{DASH}"),
+    Morse(letter="W",   sequence=f"{DOT}{DASH}{DASH}"),
+    Morse(letter="X",   sequence=f"{DASH}{DOT}{DOT}{DASH}"),
+    Morse(letter="Y",   sequence=f"{DASH}{DOT}{DASH}{DASH}"),
+    Morse(letter="Z",   sequence=f"{DASH}{DASH}{DOT}{DOT}"),
+    Morse(letter="1",   sequence=f"{DOT}{DASH}{DASH}{DASH}{DASH}"),
+    Morse(letter="2",   sequence=f"{DOT}{DOT}{DASH}{DASH}{DASH}"),
+    Morse(letter="3",   sequence=f"{DOT}{DOT}{DOT}{DASH}{DASH}"),
+    Morse(letter="4",   sequence=f"{DOT}{DOT}{DOT}{DOT}{DASH}"),
+    Morse(letter="5",   sequence=f"{DOT}{DOT}{DOT}{DOT}{DOT}"),
+    Morse(letter="6",   sequence=f"{DASH}{DOT}{DOT}{DOT}{DOT}"),
+    Morse(letter="7",   sequence=f"{DASH}{DASH}{DOT}{DOT}{DOT}"),
+    Morse(letter="8",   sequence=f"{DASH}{DASH}{DASH}{DOT}{DOT}"),
+    Morse(letter="9",   sequence=f"{DASH}{DASH}{DASH}{DASH}{DOT}"),
+    Morse(letter="0",   sequence=f"{DASH}{DASH}{DASH}{DASH}{DASH}"),
+    Morse(letter="À",   sequence=f"{DOT}{DASH}{DASH}{DOT}{DASH}"),
+    Morse(letter="Ä",   sequence=f"{DOT}{DASH}{DOT}{DASH}"),
+    Morse(letter="È",   sequence=f"{DOT}{DASH}{DOT}{DOT}{DASH}"),
+    Morse(letter="É",   sequence=f"{DOT}{DOT}{DASH}{DOT}{DOT}"),
+    Morse(letter="Ö",   sequence=f"{DASH}{DASH}{DASH}{DOT}"),
+    Morse(letter="Ü",   sequence=f"{DOT}{DOT}{DASH}{DASH}"),
+    Morse(letter="ß",   sequence=f"{DOT}{DOT}{DOT}{DASH}{DASH}{DOT}{DOT}"),
+    Morse(letter="CH",  sequence=f"{DASH}{DASH}{DASH}{DASH}"),
+    Morse(letter="Ñ",   sequence=f"{DASH}{DASH}{DOT}{DASH}{DASH}"),
+    Morse(letter=".",   sequence=f"{DOT}{DASH}{DOT}{DASH}{DOT}{DASH}"),
+    Morse(letter=",",   sequence=f"{DASH}{DASH}{DOT}{DOT}{DASH}{DASH}"),
+    Morse(letter=":",   sequence=f"{DASH}{DASH}{DASH}{DOT}{DOT}{DOT}"),
+    Morse(letter=";",   sequence=f"{DASH}{DOT}{DASH}{DOT}{DASH}{DOT}"),
+    Morse(letter="?",   sequence=f"{DOT}{DOT}{DASH}{DASH}{DOT}{DOT}"),
+    Morse(letter="-",   sequence=f"{DASH}{DOT}{DOT}{DOT}{DOT}{DASH}"),
+    Morse(letter="_",   sequence=f"{DOT}{DOT}{DASH}{DASH}{DOT}{DASH}"),
+    Morse(letter="(",   sequence=f"{DASH}{DOT}{DASH}{DASH}{DOT}"),
+    Morse(letter=")",   sequence=f"{DASH}{DOT}{DASH}{DASH}{DOT}{DASH}"),
+    Morse(letter="'",   sequence=f"{DOT}{DASH}{DASH}{DASH}{DASH}{DOT}"),
+    Morse(letter="=",   sequence=f"{DASH}{DOT}{DOT}{DOT}{DASH}"),
+    Morse(letter="+",   sequence=f"{DOT}{DASH}{DOT}{DASH}{DOT}"),
+    Morse(letter="/",   sequence=f"{DASH}{DOT}{DOT}{DASH}{DOT}"),
+    Morse(letter="@",   sequence=f"{DOT}{DASH}{DASH}{DOT}{DASH}{DOT}"),
+    Morse(letter="KA",  sequence=f"{DASH}{DOT}{DASH}{DOT}{DASH}"),
+    Morse(letter="BT",  sequence=f"{DASH}{DOT}{DOT}{DOT}{DASH}"),
+    Morse(letter="AR",  sequence=f"{DOT}{DASH}{DOT}{DASH}{DOT}"),
+    Morse(letter="VE",  sequence=f"{DOT}{DOT}{DOT}{DASH}{DOT}"),
+    Morse(letter="SK",  sequence=f"{DOT}{DOT}{DOT}{DASH}{DOT}{DASH}"),
+    Morse(letter="SOS", sequence=f"{DOT}{DOT}{DOT}{DASH}{DASH}{DASH}{DOT}{DOT}{DOT}"),
+    Morse(letter="HH",  sequence=f"{DOT}{DOT}{DOT}{DOT}{DOT}{DOT}{DOT}{DOT}"),
+    Morse(letter="!",   sequence=f"{DASH}{DOT}{DASH}{DOT}{DASH}{DASH}"),
+)
 
-## decode helper functions
-
-def sentencesFromMorseText(text=f'{dot}{dot}{dot} {dash}{dash}{dash} \t {dot}  \n {dot}{dot}{dot} {dash}{dash}{dash} {dot}  \r  {dot}{dot}{dot} {dash}{dash}{dash} {dot}'):
-    ## splits text into sentences
-    sentences = re.split(r'(\\{1,}|\r{1,}|\n{1,})', text)
-    #print('sentences', sentences)
-    return sentences
-
-def wordsFromMorseSentences(sentence=f'{dot}{dot}{dot} {dash}{dash}{dash} {dot}  {dot}{dot}{dot} {dash}{dash}{dash} {dot}   {dot}{dot}{dot} {dash}{dash}{dash} {dot}'):
-    ## splits a sentence into words when two or more spaces 
-    words = re.split("\s{2,}", sentence)
-    #print('words', words)
-    return words
-
-def charsFromMorseWords(word=f'{dot}{dot}{dot} {dash}{dash}{dash} {dot}  {dot}{dot}{dot} {dash}{dash}{dash} {dot}   {dot}{dot}{dot} {dash}{dash}{dash} {dot}'):
-    ## splits a sentence into words when two or more spaces 
-    chars = re.split("\s{1,}", word)
-    #print('chars', chars)
-    return chars
-
-def normalize(text='_'):
-    # replace unusual minus and and not needed white spaces
-    return text.replace('_','{dash}')
-
-def toDotDash(text=""):
-    return text.replace('-',f'{dash}').replace('.',f'{dot}')
-
-def decodeChar(char=f'{dot}'):
-    for glyph in morsecode:
-        if glyph.sequence == char:
-            return glyph.letter
-    return None
-
-def encodeChar(char='A'):
-    for glyph in morsecode:
-        if glyph.letter == char:
-            return glyph.sequence
-    return None
+# O(1) lookup dicts built once at import time
+_ENCODE: dict[str, str] = {m.letter: m.sequence for m in morsecode}
+_DECODE: dict[str, str] = {m.sequence: m.letter for m in morsecode}
 
 
-# morse text en-/decoder function
+def _normalize(text: str) -> str:
+    """Convert ASCII dot to unicode middle-dot used internally."""
+    return text.replace('.', DOT)
 
-def isMorseCode(text):
-    dot = text.count('.')
-    dash = text.count('-')
-    leer = text.count(' ')
-    if (dot+dash+leer) > len(text)/4:
-        return True
-    return False
-    
-def decodeText(text):
-    result = ""
-    text = toDotDash(text)
-    sentences = sentencesFromMorseText(text)
-    for sentence in sentences:
-        words = wordsFromMorseSentences(sentence)
-        for word in words:
-            chars = charsFromMorseWords(word)
-            result = result + ' '
-            for char in chars:
-                g = decodeChar(normalize(char))
-                if g is not None:
-                  result = result + str( g )
-    result = result
-    return str(result)
 
-def encodeText(text):
-    result = ""
-    for char in text.upper():
-        print("EncodedText ",char)
-        result = result + encodeChar(char) + ' '
-    result = result
-    return str(result)
+def is_morse(text: str) -> bool:
+    """Heuristic: if >25% of chars are morse symbols, treat as morse input."""
+    if not text:
+        return False
+    dots = text.count('.') + text.count(DOT)
+    dashes = text.count('-')
+    if dots + dashes == 0:
+        return False
+    spaces = text.count(' ')
+    return (dots + dashes + spaces) > len(text) / 4
 
-## Textual
 
-class MorseWidget(Widget):
+def encode(text: str) -> str:
+    """Encode plain text to morse code. Unknown chars are skipped."""
+    parts = [_ENCODE[c] for c in text.upper() if c in _ENCODE]
+    return ' '.join(parts)
 
-    text = reactive("")
 
-    def render(self) -> str:
-        return f"{self.text}"
+def decode(text: str) -> str:
+    """Decode morse code to plain text."""
+    text = _normalize(text)
+    words: list[str] = []
+    for sentence in re.split(r'[\r\n\\]+', text):
+        for word in re.split(r'\s{2,}', sentence):
+            chars = [_DECODE.get(c, '') for c in re.split(r'\s+', word.strip()) if c]
+            word_str = ''.join(chars)
+            if word_str:
+                words.append(word_str)
+    return ' '.join(words)
+
+
+class MorseOutput(Static):
+    output: reactive[str] = reactive("")
+
+    def watch_output(self, value: str) -> None:
+        self.update(value)
+
 
 class MorseApp(App):
     CSS = """
-          """
-    BINDINGS = [ Binding(key="d", action="toggle_dark", description="Toggle dark mode", show=True)
-               ]
-    
-    mode = True
+    Screen {
+        layout: vertical;
+        padding: 1 2;
+    }
+
+    Input {
+        margin-bottom: 1;
+    }
+
+    MorseOutput {
+        padding: 1 2;
+        border: round $primary;
+        min-height: 5;
+        color: $text;
+    }
+    """
+
+    BINDINGS = [
+        Binding("d", "toggle_dark", "Toggle dark mode"),
+        Binding("ctrl+c", "quit", "Quit"),
+    ]
 
     def compose(self) -> ComposeResult:
-        yield Input(placeholder="Enter text or morse code (seperate morse words by 1 space, morse sentences by 3 spaces)")
-        yield MorseWidget()
+        yield Input(
+            placeholder="Type text → morse  |  Type ·-· --- morse → text  (words: 2 spaces, sentences: 3 spaces)"
+        )
+        yield MorseOutput()
         yield Footer()
 
     def on_input_changed(self, event: Input.Changed) -> None:
-        if isMorseCode(event.value):
-            self.query_one(MorseWidget).text = decodeText(event.value)
+        value = event.value
+        if is_morse(value):
+            self.query_one(MorseOutput).output = decode(value)
         else:
-            self.query_one(MorseWidget).text = encodeText(event.value)
+            self.query_one(MorseOutput).output = encode(value)
 
-    def action_toggle_dark(self) -> None:
-        """An action to toggle dark mode."""
-        self.dark = not self.dark
 
-def main():
-    app = MorseApp()
-    app.run()
+def main() -> None:
+    MorseApp().run()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
